@@ -1,0 +1,20 @@
+[project]
+name = "postmortem-rag"
+version = "1.0.0"
+description = "Metadata-Filtered RAG for incident postmortems"
+requires-python = ">=3.11"
+
+dependencies = [
+    "langchain>=0.3.0",
+    "langchain-openai>=0.2.0",
+    "langchain-mongodb>=0.2.0",
+    "langchain-text-splitters>=0.3.0",
+    "pymongo>=4.6.0",
+    "python-dotenv>=1.0.0",
+    "python-frontmatter>=1.1.0",
+    "certifi>=2024.0.0",
+]
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

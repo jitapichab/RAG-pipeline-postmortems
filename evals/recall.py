@@ -67,7 +67,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Local modules
-from config import OPENAI_API_KEY, DEFAULT_TOP_K
+from config import OPENAI_API_KEY
 from retrieval import retrieve_unique
 
 

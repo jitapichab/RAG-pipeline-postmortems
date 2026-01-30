@@ -196,9 +196,11 @@ def convert_issue_to_markdown(issue: dict) -> tuple[str, str]:
 
 
 def main():
-    # Paths - use relative path to postmortems.json in same directory
-    input_file = Path(__file__).parent / "postmortems.json"
-    output_dir = Path(__file__).parent / "docs"
+    # Paths
+    scripts_dir = Path(__file__).parent
+    project_root = scripts_dir.parent
+    input_file = scripts_dir / "postmortems.json"  # JSON stays in scripts/
+    output_dir = project_root / "docs"             # Output to project root
     
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)

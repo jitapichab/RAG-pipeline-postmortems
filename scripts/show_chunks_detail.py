@@ -6,8 +6,8 @@ This script shows exactly how a postmortem is chunked and what
 the LLM receives, including overlap regions.
 
 Usage:
-    python show_chunks_detail.py PFU-187
-    python show_chunks_detail.py PFU-191 --merged
+    python scripts/show_chunks_detail.py PFU-187
+    python scripts/show_chunks_detail.py PFU-191 --merged
 
 Author: Jorge Tapicha
 Date: 2026-01-28
@@ -17,7 +17,7 @@ import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import DB_NAME, COLLECTION_NAME, CHUNK_SIZE, CHUNK_OVERLAP
 from utils import get_mongo_client

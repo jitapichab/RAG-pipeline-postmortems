@@ -6,9 +6,9 @@ This script tests that chunks are retrieved and merged in the correct
 document order (by chunk_index), not by retrieval score.
 
 Usage:
-    python get_docs_chunk.py PFU-187
-    python get_docs_chunk.py PFU-191 --query "DNS failure"
-    python get_docs_chunk.py PFU-187 --show-content
+    python scripts/get_docs_chunk.py PFU-187
+    python scripts/get_docs_chunk.py PFU-191 --query "DNS failure"
+    python scripts/get_docs_chunk.py PFU-187 --show-content
 
 Author: Jorge Tapicha
 Date: 2026-01-28
@@ -18,12 +18,12 @@ import argparse
 import sys
 from pathlib import Path
 
-# Add current directory to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import DB_NAME, COLLECTION_NAME
 from utils import get_mongo_client
-from retrieval import retrieve, retrieve_unique, merge_chunks_by_incident
+from retrieval import retrieve, merge_chunks_by_incident
 
 
 def get_all_chunks_for_incident(incident_id: str) -> list:
@@ -209,9 +209,9 @@ def main():
     if not args.incident_id:
         parser.print_help()
         print("\n💡 Examples:")
-        print("   python get_docs_chunk.py PFU-187")
-        print("   python get_docs_chunk.py PFU-191 --query 'DNS failure'")
-        print("   python get_docs_chunk.py --list")
+        print("   python scripts/get_docs_chunk.py PFU-187")
+        print("   python scripts/get_docs_chunk.py PFU-191 --query 'DNS failure'")
+        print("   python scripts/get_docs_chunk.py --list")
         return
     
     test_retrieval_order(

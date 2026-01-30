@@ -53,7 +53,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Local modules
 from config import OPENAI_API_KEY, JUDGE_MODEL, DEFAULT_TOP_K
-from retrieval import retrieve_unique, format_context
+from retrieval import retrieve, format_context
 from generation import generate_answer
 
 

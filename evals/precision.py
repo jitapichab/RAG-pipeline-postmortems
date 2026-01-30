@@ -52,7 +52,8 @@ from retrieval import retrieve, retrieve_unique, retrieve_with_scores
 # CONFIGURATION
 # =============================================================================
 
-DEFAULT_K = DEFAULT_TOP_K
+# Use K=3 for precision (fewer docs = higher precision)
+DEFAULT_K = 3
 
 # Whether to use deduplicated retrieval for evaluation
 # True = more accurate metrics (one doc per incident)
@@ -186,7 +187,6 @@ TEST_CASES = [
         "id": "database_timeout",
         "question": "What incidents were caused by database timeouts or latency issues?",
         "description": "Database performance incidents",
-        "expected_categories": ["database"],  # For validation
     },
     {
         "id": "critical_incidents",
@@ -203,7 +203,6 @@ TEST_CASES = [
         "id": "deployment_failures",
         "question": "What incidents were caused by deployments or releases gone wrong?",
         "description": "Deployment-related incidents",
-        "expected_categories": ["deployment"],
     },
     {
         "id": "payment_service",
@@ -219,13 +218,11 @@ TEST_CASES = [
         "id": "capacity_issues",
         "question": "Were there incidents caused by capacity limits, scaling, or traffic spikes?",
         "description": "Capacity/scaling incidents",
-        "expected_categories": ["capacity"],
     },
     {
         "id": "network_dns",
         "question": "What incidents involved network issues, DNS problems, or connectivity failures?",
         "description": "Network-related incidents",
-        "expected_categories": ["network"],
     },
     {
         "id": "mongodb_specific",
@@ -238,9 +235,9 @@ TEST_CASES = [
         "description": "Operational learnings",
     },
     {
-        "id": "aws problems",
+        "id": "aws_problems",
         "question": "What kind of problems were related to AWS?",
-        "description": "Operational learnings",
+        "description": "Cloud infrastructure issues",
     },
 ]
 

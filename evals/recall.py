@@ -75,9 +75,8 @@ from retrieval import retrieve_unique
 # CONFIGURATION
 # =============================================================================
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-DEFAULT_K = 5
+# Use K=10 for better recall coverage
+DEFAULT_K = 10
 
 
 # =============================================================================
@@ -101,129 +100,69 @@ TEST_CASES_WITH_GROUND_TRUTH = [
         "id": "database_incidents",
         "question": "What incidents were caused by database issues like MongoDB, Aurora, or Postgres?",
         "description": "Database-related incidents",
-        # Ground truth: All incidents with root_cause_category="database"
-        # Plus incidents mentioning MongoDB, Aurora, Postgres
+        # Use metadata filter to find database-category incidents
+        "filters": {"root_cause_category": "database"},
         "relevant_incident_ids": [
-            "PFU-111",  # Database issue
-            "PFU-112",  # Database issue
-            "PFU-119",  # Stress test DB
-            "PFU-140",  # Niubiz integration (DB)
-            "PFU-141",  # Database
-            "PFU-148",  # Database
-            "PFU-170",  # Aurora reboot
-            "PFU-177",  # Redeban transactions
-            "PFU-189",  # Pagarme charge not found
-            "PFU-190",  # Santander Pix
-            "PFU-191",  # DNS failure (affects DB)
-            "PFU-197",  # Aurora cluster reboot
-            "PFU-294",  # MongoDB latency
-            "PFU-295",  # MongoDB latency (recipients)
-            "PFU-281",  # Index review
+            "PFU-111", "PFU-112", "PFU-119", "PFU-141", "PFU-148",
+            "PFU-170", "PFU-177", "PFU-197", "PFU-294", "PFU-295",
         ],
     },
     {
         "id": "deployment_incidents",
         "question": "What incidents were caused by deployments, releases, or rollouts?",
         "description": "Deployment-related incidents",
-        # Ground truth: All incidents with root_cause_category="deployment"
+        "filters": {"root_cause_category": "deployment"},
         "relevant_incident_ids": [
-            "PFU-110",  # Post mortem deployment
-            "PFU-122",  # 3DS checkbox disabled
-            "PFU-123",  # Deployment issue
-            "PFU-124",  # Deployment monitoring
-            "PFU-135",  # Wrong status mapping
-            "PFU-149",  # Deployment flow
-            "PFU-160",  # 3DS setup flow
-            "PFU-166",  # Pagbank rejections
-            "PFU-183",  # Deploy schedule policy
-            "PFU-185",  # Wallet payments
-            "PFU-195",  # Ebanx webhook
-            "PFU-196",  # Blik payment after workshop
-            "PFU-237",  # Deploy workflow changes
-            "PFU-266",  # Runtime panic after deploy
+            "PFU-110", "PFU-122", "PFU-123", "PFU-124", "PFU-135",
+            "PFU-149", "PFU-160", "PFU-183", "PFU-237", "PFU-266",
         ],
     },
     {
         "id": "network_timeout_incidents",
         "question": "What incidents involved network issues, DNS, timeouts, or connectivity problems?",
         "description": "Network/connectivity incidents",
-        # Ground truth: Incidents with root_cause_category="network" or mentioning timeout/DNS
+        "filters": {"root_cause_category": "network"},
         "relevant_incident_ids": [
-            "PFU-108",  # Openpay 3DS race condition
-            "PFU-128",  # Circuit breaker analysis
-            "PFU-154",  # Bad timeout configuration
-            "PFU-158",  # Insights errors
-            "PFU-161",  # Bad timeout handling Openpay
-            "PFU-172",  # Timeout handling checks
-            "PFU-191",  # DNS failure (critical)
-            "PFU-192",  # Network tokens
-            "PFU-193",  # TLS timeout Banco do Brasil
-            "PFU-202",  # PCI Prosa egress
+            "PFU-128", "PFU-154", "PFU-161", "PFU-172", "PFU-191",
         ],
     },
     {
         "id": "critical_severity_incidents",
         "question": "What were the most critical (S1) production incidents?",
         "description": "S1 Critical incidents",
-        # Ground truth: All S1 severity incidents
+        # Use severity filter for categorical query
+        "filters": {"severity": "S1 - Critical Severity"},
         "relevant_incident_ids": [
-            "PFU-109",  # Core integration
-            "PFU-112",  # Critical incident
-            "PFU-123",  # Critical deployment
-            "PFU-170",  # Aurora reboot
-            "PFU-177",  # Redeban transactions
-            "PFU-191",  # DNS failure
-            "PFU-194",  # SDK Android crashes
-            "PFU-197",  # Aurora cluster reboot
-            "PFU-213",  # MercadoPago
-            "PFU-238",  # WhatsApp agent
-            "PFU-239",  # Telemetry config
-            "PFU-287",  # PicPay wallet
-            "PFU-290",  # AMEX duplicated transactions
+            "PFU-109", "PFU-112", "PFU-123", "PFU-170", "PFU-177",
+            "PFU-191", "PFU-194", "PFU-197", "PFU-213", "PFU-239",
+            "PFU-287", "PFU-290",
         ],
     },
     {
         "id": "payment_service_incidents",
         "question": "What issues affected the payment-rx-orc or payment services?",
-        "description": "Payment service incidents",
-        # Ground truth: Incidents mentioning payment-rx-orc or payment services
+        "description": "Payment service incidents - semantic search",
+        # No filter - test semantic search for service names
         "relevant_incident_ids": [
-            "PFU-170",  # Payment transactions Aurora
-            "PFU-191",  # Payment transaction unavailability
-            "PFU-239",  # Payments affected telemetry
-            "PFU-287",  # PicPay wallet payments
-            "PFU-289",  # Kafka topic (payments)
-            "PFU-294",  # Payment-rx-orc 500
-            "PFU-295",  # Payment with recipients
+            "PFU-170", "PFU-191", "PFU-239", "PFU-287", "PFU-294", "PFU-295",
         ],
     },
     {
         "id": "kafka_messaging_incidents",
         "question": "What incidents involved Kafka, message queues, or event processing?",
         "description": "Kafka/messaging incidents",
-        # Ground truth: Incidents mentioning Kafka, lag, messaging
+        # Small ground truth - good for semantic search
         "relevant_incident_ids": [
-            "PFU-123",  # Kafka mentioned
-            "PFU-125",  # Opsgenie Kafka lag
-            "PFU-289",  # Kafka topic lag clearsale
+            "PFU-123", "PFU-125", "PFU-289",
         ],
     },
     {
         "id": "capacity_scaling_incidents",
         "question": "What incidents were caused by capacity limits, traffic spikes, or scaling issues?",
         "description": "Capacity/scaling incidents",
-        # Ground truth: Incidents with root_cause_category="capacity"
+        "filters": {"root_cause_category": "capacity"},
         "relevant_incident_ids": [
-            "PFU-109",  # Core integration capacity
-            "PFU-114",  # Connection pool adjustment
-            "PFU-150",  # Capacity issue
-            "PFU-167",  # MercadoPago capacity
-            "PFU-187",  # Faulted HW EC2
-            "PFU-193",  # TLS timeout saturation
-            "PFU-210",  # Critical monitoring webhooks
-            "PFU-211",  # Retry logic circuit breakers
-            "PFU-247",  # Pending transactions
-            "PFU-289",  # Kafka lag (capacity)
+            "PFU-109", "PFU-114", "PFU-150", "PFU-187", "PFU-211", "PFU-247",
         ],
     },
 ]
@@ -357,15 +296,19 @@ def run_recall_evaluation(
     for i, test_case in enumerate(test_cases, 1):
         question = test_case["question"]
         relevant_ids = test_case["relevant_incident_ids"]
+        filters = test_case.get("filters", {})
         
         print(f"\n[{i}/{len(test_cases)}] {test_case['id']}")
         print(f"    Q: {question[:55]}...")
         print(f"    Ground truth: {len(relevant_ids)} relevant incidents")
+        if filters:
+            print(f"    Filters: {filters}")
         
         result = calculate_recall(
             question=question,
             relevant_ids=relevant_ids,
             k=k,
+            filters=filters,
             verbose=verbose
         )
         

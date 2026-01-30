@@ -1,0 +1,22 @@
+# RAG-pipeline Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core LangChain - The RAG framework
+langchain>=0.3.0                    # Core abstractions
+langchain-openai>=0.2.0             # OpenAI integration (embeddings, chat)
+langchain-text-splitters>=0.3.0     # Text chunking utilities
+langchain-mongodb>=0.2.0            # MongoDB vector store
+langchain-core>=0.3.0               # Document class, prompts
+
+# MongoDB - Database driver
+pymongo[srv]>=4.6.0                 # [srv] adds support for mongodb+srv:// URLs
+
+# Markdown Parsing - For YAML frontmatter
+python-frontmatter>=1.0.0           # Parse ---yaml--- headers in markdown
+
+# Environment & Security
+python-dotenv>=1.0.0                # Load .env files
+certifi>=2024.0.0                   # TLS/SSL certificates for Atlas
+
+# OpenAI - For embeddings and generation
+openai>=1.0.0                       # Direct API (used by langchain-openai)

@@ -44,8 +44,8 @@ from langchain_core.output_parsers import StrOutputParser
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Local modules
-from config import OPENAI_API_KEY, JUDGE_MODEL, DEFAULT_TOP_K
-from retrieval import retrieve, retrieve_unique, retrieve_with_scores
+from config import OPENAI_API_KEY, JUDGE_MODEL
+from retrieval import retrieve, retrieve_unique
 
 
 # =============================================================================
@@ -53,7 +53,8 @@ from retrieval import retrieve, retrieve_unique, retrieve_with_scores
 # =============================================================================
 
 # Use K=3 for precision (fewer docs = higher precision)
-DEFAULT_K = 3
+# Keep K=5 to test metadata filtering properly
+DEFAULT_K = 5
 
 # Whether to use deduplicated retrieval for evaluation
 # True = more accurate metrics (one doc per incident)
@@ -183,61 +184,79 @@ Respond with ONLY one word: "RELEVANT" or "NOT_RELEVANT"
 # - Range from specific to general
 
 TEST_CASES = [
+    # =========================================================================
+    # TEST CASES WITH METADATA FILTERS
+    # Valid categories: capacity, database, configuration, deployment, network
+    # Valid severities: S1 - Critical Severity, S2 - High Severity, S3 - Medium Severity
+    # =========================================================================
     {
-        "id": "database_timeout",
-        "question": "What incidents were caused by database timeouts or latency issues?",
-        "description": "Database performance incidents",
+        "id": "database_issues",
+        "question": "What incidents were related to database problems like connection issues, queries, or data corruption?",
+        "description": "Database incidents (filtered)",
+        "filters": {"root_cause_category": "database"},
     },
     {
-        "id": "critical_incidents",
+        "id": "critical_severity",
         "question": "What were the most critical production incidents and their root causes?",
-        "description": "High-severity incidents",
+        "description": "S1 Critical severity incidents (filtered)",
         "filters": {"severity": "S1 - Critical Severity"},
     },
     {
-        "id": "kafka_issues",
-        "question": "Were there any incidents related to Kafka, message queues, or event processing?",
-        "description": "Messaging/event system issues",
+        "id": "deployment_issues",
+        "question": "What incidents were caused by deployments, releases, or rollouts?",
+        "description": "Deployment incidents (filtered)",
+        "filters": {"root_cause_category": "deployment"},
     },
     {
-        "id": "deployment_failures",
-        "question": "What incidents were caused by deployments or releases gone wrong?",
-        "description": "Deployment-related incidents",
+        "id": "capacity_scaling",
+        "question": "What incidents were caused by capacity limits, traffic spikes, or resource exhaustion?",
+        "description": "Capacity incidents (filtered)",
+        "filters": {"root_cause_category": "capacity"},
     },
     {
-        "id": "payment_service",
+        "id": "configuration_issues",
+        "question": "What incidents were caused by misconfigurations or wrong settings?",
+        "description": "Configuration incidents (filtered)",
+        "filters": {"root_cause_category": "configuration"},
+    },
+    {
+        "id": "network_connectivity",
+        "question": "What incidents were related to network issues, connectivity, or timeout problems?",
+        "description": "Network incidents (filtered)",
+        "filters": {"root_cause_category": "network"},
+    },
+    {
+        "id": "high_severity_combined",
+        "question": "What high-severity database incidents caused outages?",
+        "description": "Combined filter: severity + category",
+        "filters": {
+            "severity": ["S1 - Critical Severity", "S2 - High Severity"],
+            "root_cause_category": "database"
+        },
+    },
+    # =========================================================================
+    # TEST CASES WITHOUT FILTERS (Semantic Search Only)
+    # These test pure vector search without metadata pre-filtering
+    # =========================================================================
+    {
+        "id": "kafka_messaging",
+        "question": "What incidents involved Kafka, message queues, or event processing?",
+        "description": "Kafka/messaging (semantic search)",
+    },
+    {
+        "id": "payment_services",
         "question": "What issues affected the payment processing services?",
-        "description": "Payment system incidents",
+        "description": "Payment services (semantic search)",
     },
     {
-        "id": "fixes_and_mitigations",
-        "question": "What corrective measures and fixes were implemented after incidents?",
-        "description": "Remediation patterns",
+        "id": "mongodb_issues",
+        "question": "What MongoDB-related issues have occurred?",
+        "description": "MongoDB specific (semantic search)",
     },
     {
-        "id": "capacity_issues",
-        "question": "Were there incidents caused by capacity limits, scaling, or traffic spikes?",
-        "description": "Capacity/scaling incidents",
-    },
-    {
-        "id": "network_dns",
-        "question": "What incidents involved network issues, DNS problems, or connectivity failures?",
-        "description": "Network-related incidents",
-    },
-    {
-        "id": "mongodb_specific",
-        "question": "What MongoDB-related issues have occurred and how were they resolved?",
-        "description": "MongoDB-specific incidents",
-    },
-    {
-        "id": "prevention_lessons",
-        "question": "What lessons learned and preventive measures came from past incidents?",
-        "description": "Operational learnings",
-    },
-    {
-        "id": "aws_problems",
-        "question": "What kind of problems were related to AWS?",
-        "description": "Cloud infrastructure issues",
+        "id": "lessons_learned",
+        "question": "What preventive measures and lessons learned came from incidents?",
+        "description": "Lessons learned (semantic search)",
     },
 ]
 

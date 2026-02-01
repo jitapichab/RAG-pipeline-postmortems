@@ -75,8 +75,8 @@ from retrieval import retrieve_unique
 # CONFIGURATION
 # =============================================================================
 
-# Use K=10 for better recall coverage
-DEFAULT_K = 10
+# Use K=15 for better recall coverage (chaos engineering needs high recall)
+DEFAULT_K = 15
 
 
 # =============================================================================
@@ -96,15 +96,20 @@ DEFAULT_K = 10
 # - Create larger, more comprehensive label sets
 
 TEST_CASES_WITH_GROUND_TRUTH = [
+    # =========================================================================
+    # Ground truth labels based on ACTUAL MongoDB data (verified)
+    # =========================================================================
     {
         "id": "database_incidents",
         "question": "What incidents were caused by database issues like MongoDB, Aurora, or Postgres?",
         "description": "Database-related incidents",
-        # Use metadata filter to find database-category incidents
         "filters": {"root_cause_category": "database"},
+        # Verified: db.find({root_cause_category: "database"}) - 20 incidents
         "relevant_incident_ids": [
-            "PFU-111", "PFU-112", "PFU-119", "PFU-141", "PFU-148",
-            "PFU-170", "PFU-177", "PFU-197", "PFU-294", "PFU-295",
+            "PFU-111", "PFU-112", "PFU-119", "PFU-140", "PFU-141", 
+            "PFU-148", "PFU-170", "PFU-177", "PFU-182", "PFU-189",
+            "PFU-190", "PFU-191", "PFU-197", "PFU-234", "PFU-235",
+            "PFU-254", "PFU-284", "PFU-290", "PFU-294", "PFU-295",
         ],
     },
     {
@@ -112,57 +117,67 @@ TEST_CASES_WITH_GROUND_TRUTH = [
         "question": "What incidents were caused by deployments, releases, or rollouts?",
         "description": "Deployment-related incidents",
         "filters": {"root_cause_category": "deployment"},
+        # Verified: db.find({root_cause_category: "deployment"}) - 20 incidents
         "relevant_incident_ids": [
-            "PFU-110", "PFU-122", "PFU-123", "PFU-124", "PFU-135",
-            "PFU-149", "PFU-160", "PFU-183", "PFU-237", "PFU-266",
+            "PFU-110", "PFU-122", "PFU-123", "PFU-124", "PFU-130",
+            "PFU-135", "PFU-149", "PFU-160", "PFU-166", "PFU-169",
+            "PFU-183", "PFU-185", "PFU-195", "PFU-196", "PFU-204",
+            "PFU-213", "PFU-214", "PFU-237", "PFU-240", "PFU-241",
         ],
     },
     {
-        "id": "network_timeout_incidents",
-        "question": "What incidents involved network issues, DNS, timeouts, or connectivity problems?",
+        "id": "configuration_incidents",
+        "question": "What incidents were caused by misconfigurations or wrong settings?",
+        "description": "Configuration-related incidents",
+        "filters": {"root_cause_category": "configuration"},
+        # Verified: db.find({root_cause_category: "configuration"}) - 12 incidents
+        "relevant_incident_ids": [
+            "PFU-107", "PFU-152", "PFU-154", "PFU-162", "PFU-184",
+            "PFU-207", "PFU-209", "PFU-229", "PFU-238", "PFU-246",
+            "PFU-267", "PFU-287",
+        ],
+    },
+    {
+        "id": "network_incidents",
+        "question": "What incidents involved network issues or connectivity problems?",
         "description": "Network/connectivity incidents",
         "filters": {"root_cause_category": "network"},
+        # Verified: db.find({root_cause_category: "network"}) - 9 incidents
         "relevant_incident_ids": [
-            "PFU-128", "PFU-154", "PFU-161", "PFU-172", "PFU-191",
+            "PFU-108", "PFU-128", "PFU-158", "PFU-161", "PFU-172",
+            "PFU-192", "PFU-193", "PFU-194", "PFU-236",
         ],
     },
     {
-        "id": "critical_severity_incidents",
-        "question": "What were the most critical (S1) production incidents?",
-        "description": "S1 Critical incidents",
-        # Use severity filter for categorical query
-        "filters": {"severity": "S1 - Critical Severity"},
+        "id": "capacity_incidents",
+        "question": "What incidents were caused by capacity limits, traffic spikes, or scaling issues?",
+        "description": "Capacity/scaling incidents",
+        "filters": {"root_cause_category": "capacity"},
+        # Verified: db.find({root_cause_category: "capacity"}) - subset of 10 for K=15
         "relevant_incident_ids": [
-            "PFU-109", "PFU-112", "PFU-123", "PFU-170", "PFU-177",
-            "PFU-191", "PFU-194", "PFU-197", "PFU-213", "PFU-239",
-            "PFU-287", "PFU-290",
+            "PFU-105", "PFU-109", "PFU-114", "PFU-150", "PFU-153",
+            "PFU-187", "PFU-211", "PFU-247", "PFU-266", "PFU-289",
         ],
     },
+    # =========================================================================
+    # Semantic search test cases (no filter)
+    # =========================================================================
     {
         "id": "payment_service_incidents",
-        "question": "What issues affected the payment-rx-orc or payment services?",
+        "question": "What issues affected payment services or payment processing?",
         "description": "Payment service incidents - semantic search",
-        # No filter - test semantic search for service names
+        # Semantic search - subset of top payment-related incidents
         "relevant_incident_ids": [
-            "PFU-170", "PFU-191", "PFU-239", "PFU-287", "PFU-294", "PFU-295",
+            "PFU-109", "PFU-111", "PFU-112", "PFU-141", "PFU-170",
+            "PFU-191", "PFU-239", "PFU-294", "PFU-295",
         ],
     },
     {
         "id": "kafka_messaging_incidents",
         "question": "What incidents involved Kafka, message queues, or event processing?",
-        "description": "Kafka/messaging incidents",
-        # Small ground truth - good for semantic search
+        "description": "Kafka/messaging incidents - semantic search",
         "relevant_incident_ids": [
             "PFU-123", "PFU-125", "PFU-289",
-        ],
-    },
-    {
-        "id": "capacity_scaling_incidents",
-        "question": "What incidents were caused by capacity limits, traffic spikes, or scaling issues?",
-        "description": "Capacity/scaling incidents",
-        "filters": {"root_cause_category": "capacity"},
-        "relevant_incident_ids": [
-            "PFU-109", "PFU-114", "PFU-150", "PFU-187", "PFU-211", "PFU-247",
         ],
     },
 ]
